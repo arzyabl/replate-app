@@ -7,6 +7,18 @@ export interface ExpiringDoc extends BaseDoc {
   expireAt: Date;
 }
 
+// Helper to parse both yyyy-mm-dd (from <input type="date">) and legacy mm/dd/yyyy
+function parseDateString(value: string): { year: number; month: number; day: number } {
+  // yyyy-mm-dd
+  if (value.includes("-")) {
+    const [year, month, day] = value.split("-").map(Number);
+    return { year, month, day };
+  }
+  // mm/dd/yyyy
+  const [month, day, year] = value.split("/").map(Number);
+  return { year, month, day };
+}
+
 /**
  * concept: Expiring [Item]
  */
@@ -30,7 +42,7 @@ export default class ExpiringConcept {
     }
 
     try {
-      const [month, day, year] = expirationString.split("/").map(Number);
+      const { year, month, day } = parseDateString(expirationString);
       const [hours, minutes] = expirationTime24hrs.split(":").map(Number);
 
       // Combine date and time into a single Date object
@@ -64,7 +76,7 @@ export default class ExpiringConcept {
     }
 
     try {
-      const [month, day, year] = expirationString.split("/").map(Number);
+      const { year, month, day } = parseDateString(expirationString);
       const [hours, minutes] = expirationTime24hrs.split(":").map(Number);
 
       const expireAt = new Date(year, month - 1, day, hours, minutes);

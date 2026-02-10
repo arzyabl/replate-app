@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import UserComponent from "@/components/Profile/UserComponent.vue";
-import router from "@/router";
+import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
 import { fetchy } from "@/utils/fetchy";
 import { storeToRefs } from "pinia";
-import { computed, defineProps, onBeforeMount, ref } from "vue";
+import { computed, onBeforeMount, ref } from "vue";
 import TaggingComponent from "../Tagging/TaggingComponent.vue";
 
 const props = defineProps(["listingId"]);
 
 const { currentUsername } = storeToRefs(useUserStore());
+const router = useRouter();
 const isEditing = ref(false);
 const listing = ref<Record<string, string> | null>(null);
 const expire = ref<Record<string, string> | null>(null);
@@ -103,6 +104,23 @@ const saveChanges = async () => {
     await getListing(props.listingId);
   } catch (error) {
     console.error("Failed to save changes:", error);
+  }
+};
+
+const deleteListing = async () => {
+  if (!listing.value) {
+    console.error("Listing is null, cannot delete.");
+    return;
+  }
+  const confirmed = window.confirm("Are you sure you want to delete this listing? This action cannot be undone.");
+  if (!confirmed) {
+    return;
+  }
+  try {
+    await fetchy(`/api/listings/${listing.value._id}`, "DELETE");
+    await router.replace({ name: "Home" });
+  } catch (error) {
+    console.error("Failed to delete listing:", error);
   }
 };
 
@@ -212,9 +230,10 @@ function goToClaims() {
         <!-- Buttons -->
         <div>
           <!-- Editing buttons, visible only if not claimed and the user is the author -->
-          <button v-if="isEditing" @click="saveChanges">Save</button>
-          <button v-if="isEditing" @click="cancelEditing">Cancel</button>
-          <button v-else-if="listing.author === currentUsername && !listing.hidden" @click="startEditing">Edit</button>
+          <button type="button" v-if="isEditing" @click="saveChanges">Save</button>
+          <button type="button" v-if="isEditing" @click="cancelEditing">Cancel</button>
+          <button type="button" v-else-if="listing.author === currentUsername && !listing.hidden" @click="startEditing">Edit</button>
+          <button type="button" v-if="listing.author === currentUsername" @click="deleteListing">Delete</button>
 
           <!-- View Claims Button -->
           <button v-if="listing.author === currentUsername" @click="goToClaims" class="view-claims-button">View Claims</button>

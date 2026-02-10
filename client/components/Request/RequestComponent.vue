@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import UserComponent from "@/components/Profile/UserComponent.vue";
-import router from "@/router";
+import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
 import { fetchy } from "@/utils/fetchy";
 import { storeToRefs } from "pinia";
@@ -9,6 +9,7 @@ import { computed, onBeforeMount, ref } from "vue";
 const props = defineProps(["requestId"]);
 
 const { currentUsername } = storeToRefs(useUserStore());
+const router = useRouter();
 const isEditing = ref(false);
 const request = ref<Record<string, string> | null>(null);
 const needBy = ref<string>("");
@@ -70,6 +71,23 @@ const saveChanges = async () => {
   }
 };
 
+const deleteRequest = async () => {
+  if (!request.value) {
+    console.error("Request is null, cannot delete.");
+    return;
+  }
+  const confirmed = window.confirm("Are you sure you want to delete this request? This action cannot be undone.");
+  if (!confirmed) {
+    return;
+  }
+  try {
+    await fetchy(`/api/requests/${request.value._id}`, "DELETE");
+    await router.replace({ name: "Home" });
+  } catch (error) {
+    console.error("Failed to delete request:", error);
+  }
+};
+
 async function getRequest(requestId: string) {
   try {
     const requestResult = await fetchy(`/api/requests/${requestId}`, "GET");
@@ -79,7 +97,7 @@ async function getRequest(requestId: string) {
     editedQuantity.value = requestResult.quantity;
     editedDescription.value = requestResult.description || "";
     editedImage.value = requestResult.image || "";
-  } catch (_) {
+  } catch {
     console.error("Failed to fetch request details.");
   }
 }
@@ -91,7 +109,7 @@ async function getNeedByDate(requestId: string) {
     const needByData = await fetchy(`/api/expirations/requestExpiration/${requestId}`, "GET");
     console.log("fetched");
     needBy.value = needByData.expireAt;
-  } catch (_) {
+  } catch {
     console.error("Failed to fetch expiration detailsssssssss :(.");
   }
 }
@@ -155,9 +173,10 @@ onBeforeMount(async () => {
 
         <!-- Buttons -->
         <div>
-          <button v-if="isEditing" @click="saveChanges">Save</button>
-          <button v-if="isEditing" @click="cancelEditing">Cancel</button>
-          <button v-else-if="request.requester === currentUsername" @click="startEditing">Edit</button>
+          <button type="button" v-if="isEditing" @click="saveChanges">Save</button>
+          <button type="button" v-if="isEditing" @click="cancelEditing">Cancel</button>
+          <button type="button" v-else-if="request.requester === currentUsername" @click="startEditing">Edit</button>
+          <button type="button" v-if="request.requester === currentUsername" @click="deleteRequest">Delete</button>
           <!-- also need to check is reqeust is satisfied (hide==true), in which case no offer option -->
           <button v-else @click="goToOfferPage">Offer</button>
           <button v-if="request.requester === currentUsername" @click="goToViewOffersPage">View Offers</button>

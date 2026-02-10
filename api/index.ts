@@ -99,16 +99,9 @@ async function handleListingsExpired() {
           
           // Hide the listing instead of deleting it
           await Listing.hideSwitch(itemOid);
-          
-          // Delete the expiration record to clean up
-          await Listing_Expiring.delete(doc._id);
-          
+    
           console.log(`Successfully processed expired listing: ${listing.name}`);
-        } else if (listing && listing.hidden) {
-          // If listing is already hidden, just clean up the expiration record
-          console.log(`Cleaning up expiration record for already hidden listing: ${listing.name}`);
-          await Listing_Expiring.delete(doc._id);
-        }
+        } 
       } catch (error) {
         console.error(`Error processing expired listing ${doc.item}:`, error);
         // Continue processing other listings even if one fails
@@ -148,15 +141,8 @@ async function handleRequestsExpired() {
           // Hide the request instead of deleting it
           await Requesting.hideSwitch(itemOid);
           
-          // Delete the expiration record to clean up
-          await Request_Expiring.delete(doc._id);
-          
           console.log(`Successfully processed expired request: ${request.name}`);
-        } else if (request && request.hidden) {
-          // If request is already hidden, just clean up the expiration record
-          console.log(`Cleaning up expiration record for already hidden request: ${request.name}`);
-          await Request_Expiring.delete(doc._id);
-        }
+        } 
       } catch (error) {
         console.error(`Error processing expired request ${doc.item}:`, error);
         // Continue processing other requests even if one fails

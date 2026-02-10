@@ -2,7 +2,7 @@
 import { useToastStore } from "@/stores/toast";
 import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
-import { computed, onBeforeMount, ref } from "vue";
+import { computed, onBeforeMount, ref, watch } from "vue";
 import { RouterLink, RouterView, useRoute, useRouter } from "vue-router";
 
 const currentRoute = useRoute();
@@ -13,6 +13,13 @@ const { toast } = storeToRefs(useToastStore());
 const router = useRouter();
 
 const isModalOpen = ref(false);
+
+watch(
+  () => currentRoute.name,
+  () => {
+    isModalOpen.value = false;
+  },
+);
 
 function toggleModal() {
   isModalOpen.value = !isModalOpen.value;
