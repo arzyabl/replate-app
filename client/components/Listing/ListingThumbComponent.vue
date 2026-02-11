@@ -44,13 +44,18 @@ onBeforeMount(async () => {
 .thumbnail {
   border-radius: 15px;
   padding: 10px;
-  width: 150px;
-  height: 200px;
+  width: 200px;
+  height: 250px;
+}
+
+.thumbnail:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 8px rgba(40, 40, 40, 0.5);
 }
 
 .image-container {
-  width: 150px; /* Set the square width */
-  height: 150px; /* Set the square height */
+  width: 200px; /* Set the square width */
+  height: 200px; /* Set the square height */
   overflow: hidden; /* Ensure excess image is hidden */
   margin-bottom: 15px;
   position: relative; /* Make the container a positioned parent for the overlay */

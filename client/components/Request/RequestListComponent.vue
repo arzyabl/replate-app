@@ -88,4 +88,10 @@ const filteredRequests = computed(() => {
 .none {
   font-size: small;
 }
+.thumb-container {
+  display: grid;
+  gap: 2rem;
+  padding: 2rem;
+  justify-content: start; /* THIS forces left alignment */
+}
 </style>

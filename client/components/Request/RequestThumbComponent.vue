@@ -48,13 +48,13 @@ onBeforeMount(async () => {
   /* border: 2px solid #d15c2a;  */
   border-radius: 15px;
   padding: 10px;
-  width: 150px;
-  height: 200px;
+  width: 200px;
+  height: 250px;
 }
 
 .image-container {
-  width: 150px; /* Set the square width */
-  height: 150px; /* Set the square height */
+  width: 200px; /* Set the square width */
+  height: 200px; /* Set the square height */
   overflow: hidden; /* Ensure excess image is hidden */
   margin-bottom: 15px;
   position: relative;
@@ -65,6 +65,10 @@ onBeforeMount(async () => {
   height: 100%;
   border-radius: 10px;
   object-fit: cover; /* Ensures the image fills the square without distortion */
+}
+.thumbnail:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 8px rgba(40, 40, 40, 0.5);
 }
 
 /* Overlay styling */

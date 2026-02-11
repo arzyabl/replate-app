@@ -87,4 +87,11 @@ onBeforeMount(async () => {
 .none {
   font-size: small;
 }
+.thumb-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 280px));
+  gap: 2rem;
+  padding: 2rem;
+  justify-content: start; /* THIS forces left alignment */
+}
 </style>
