@@ -65,7 +65,7 @@ async function getListing(listingId: string) {
   try {
     const listingResult = await fetchy(`/api/listings/${listingId}`, "GET");
     listing.value = listingResult;
-  } catch (_) {
+  } catch {
     console.error("Failed to fetch listing details.");
   }
 }
@@ -77,7 +77,7 @@ async function getExpirationDate(listingId: string) {
     console.log("fetched");
     expire.value = expirationResult;
     console.log("expiration result:", expirationResult);
-  } catch (_) {
+  } catch {
     console.error("Failed to fetch expiration detailsssss :(.");
   }
 }
@@ -172,50 +172,59 @@ function goToClaims() {
         <!-- listing author -->
         <UserComponent :userId="listing.author" />
         <!-- Item Name -->
-        <p><strong>Item:</strong></p>
-        <div v-if="isEditing">
-          <input v-model="editedName" placeholder="Item Name" />
-        </div>
-        <div v-else>
-          {{ listing.name }}
-        </div>
+        <p>
+          <strong>Item: </strong>
+          <span v-if="isEditing">
+            <input v-model="editedName" placeholder="Item Name" />
+          </span>
+          <span v-else>
+            {{ listing.name }}
+          </span>
+        </p>
 
         <!-- Quantity -->
-        <p><strong>Quantity:</strong></p>
-        <div v-if="isEditing">
-          <input v-model="editedQuantity" type="number" placeholder="Quantity" />
-        </div>
-        <div v-else>
-          {{ listing.quantity }}
-        </div>
+        <p>
+          <strong>Quantity: </strong>
+          <span v-if="isEditing">
+            <input v-model="editedQuantity" type="number" placeholder="Quantity" />
+          </span>
+          <span v-else>
+            {{ listing.quantity }}
+          </span>
+        </p>
 
         <!-- Expiration -->
-        <p><strong>Expires:</strong></p>
-        <div v-if="isEditing">
-          <input v-model="editedExpiration" placeholder="mm/dd/yyyy" />
-        </div>
-        <div v-else-if="expire">
-          {{ formatDate(expire.expireAt) }}
-        </div>
+        <p>
+          <strong>Expires: </strong>
+          <span v-if="isEditing">
+            <input v-model="editedExpiration" placeholder="mm/dd/yyyy" />
+          </span>
+          <span v-else-if="expire">
+            {{ formatDate(expire.expireAt) }}
+          </span>
+        </p>
+
+        <!-- Description -->
+        <p>
+          <strong>Description: </strong>
+          <span v-if="isEditing">
+            <textarea v-model="editedDescription" placeholder="Description"></textarea>
+          </span>
+          <span v-else>
+            {{ listing.description }}
+          </span>
+        </p>
 
         <!-- Meetup Location -->
-        <p>
-          <strong> <span style="font-size: 25px">&#128205;</span> Meetup Location:</strong>
+        <p >
+          <strong> <span style="font-size: 25px">&#128205;</span> Meetup Location: </strong>
+          <span v-if="isEditing">
+            <input v-model="editedMeetupLocation" placeholder="Meetup Location" />
+          </span>
+          <span v-else>
+            {{ listing.meetup_location }}
+          </span>
         </p>
-        <div v-if="isEditing">
-          <input v-model="editedMeetupLocation" placeholder="Meetup Location" />
-        </div>
-        <div v-else>
-          {{ listing.meetup_location }}
-        </div>
-        <!-- Description -->
-        <p><strong>Description:</strong></p>
-        <div v-if="isEditing">
-          <textarea v-model="editedDescription" placeholder="Description"></textarea>
-        </div>
-        <div v-else>
-          {{ listing.description }}
-        </div>
 
         <!-- Tags -->
         <!-- <p><strong>Tags:</strong></p> -->
@@ -235,11 +244,13 @@ function goToClaims() {
           <button type="button" v-else-if="listing.author === currentUsername && !listing.hidden" @click="startEditing">Edit</button>
           <button type="button" v-if="listing.author === currentUsername" @click="deleteListing">Delete</button>
 
-          <!-- View Claims Button -->
-          <button v-if="listing.author === currentUsername" @click="goToClaims" class="view-claims-button">View Claims</button>
+          <div>
+            <!-- View Claims Button -->
+            <button v-if="listing.author === currentUsername" @click="goToClaims" class="view-claims-button">View Claims</button>
+            <!-- Show 'Claimed' button if the listing is hidden (claimed) -->
+            <button v-if="listing.hidden" disabled>Claimed out!</button>
+          </div>
 
-          <!-- Show 'Claimed' button if the listing is hidden (claimed) -->
-          <button v-if="listing.hidden" disabled>Claimed</button>
 
           <!-- Form for claiming the listing if it's not claimed and the user is not the author -->
           <form v-if="listing.author !== currentUsername && !listing.hidden" @submit.prevent="claimListing(quantity)">
@@ -266,19 +277,9 @@ h1 {
 }
 
 button {
-  margin-right: 0.5em;
-}
-/* .image-column {
-  flex: 1;
-  max-width: 50%;
+  margin: 0.5em;
 }
 
-.item-image {
-  width: 100%;
-  height: auto;
-  max-width: 300px;
-  margin-bottom: 1em;
-} */
 
 form {
   display: flex;

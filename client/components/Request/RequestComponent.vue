@@ -131,7 +131,7 @@ onBeforeMount(async () => {
   <h1>Request</h1>
   <div v-if="request" class="request-item">
     <div class="image-column" v-if="imageSrc != '@/assets/images/no-image.jpg'">
-      <img :src="imageSrc" class="item-image" />
+      <img :src="imageSrc" />
     </div>
     <div class="info-column">
       <!-- Content -->
@@ -139,37 +139,45 @@ onBeforeMount(async () => {
         <!-- Requester -->
         <UserComponent :userId="request.requester" />
         <!-- Item Name -->
-        <p><strong>Item:</strong></p>
-        <div v-if="isEditing">
-          <input v-model="editedName" placeholder="Item Name" />
-        </div>
-        <div v-else>
-          {{ request.name }}
-        </div>
+        <p>
+          <strong>Item: </strong>
+          <span v-if="isEditing">
+            <input v-model="editedName" placeholder="Item Name" />
+          </span>
+          <span v-else>
+            {{ request.name }}
+          </span>
+        </p>
 
         <!-- Quantity -->
-        <p><strong>Quantity:</strong></p>
-        <div v-if="isEditing">
-          <input v-model="editedQuantity" type="number" placeholder="Quantity" />
-        </div>
-        <div v-else>
-          {{ request.quantity }}
-        </div>
+        <p>
+          <strong>Quantity: </strong>
+          <span v-if="isEditing">
+            <input v-model="editedQuantity" type="number" placeholder="Quantity" />
+          </span>
+          <span v-else>
+            {{ request.quantity }}
+          </span>
+        </p>
 
         <!-- Need By -->
-        <p><strong>Need By:</strong></p>
-        <div>
-          {{ formatDate(needBy) }}
-        </div>
+        <p>
+          <strong>Need By: </strong>
+          <span>
+            {{ formatDate(needBy) }}
+          </span>
+        </p>
 
         <!-- Description -->
-        <p><strong>Description:</strong></p>
-        <div v-if="isEditing">
-          <textarea v-model="editedDescription" placeholder="Description"></textarea>
-        </div>
-        <div v-else>
-          {{ request.description }}
-        </div>
+        <p>
+          <strong>Description: </strong>
+          <span v-if="isEditing">
+            <textarea v-model="editedDescription" placeholder="Description"></textarea>
+          </span>
+          <span v-else>
+            {{ request.description }}
+          </span>
+        </p>
 
         <!-- Buttons -->
         <div>
@@ -178,8 +186,10 @@ onBeforeMount(async () => {
           <button type="button" v-else-if="request.requester === currentUsername" @click="startEditing">Edit</button>
           <button type="button" v-if="request.requester === currentUsername" @click="deleteRequest">Delete</button>
           <!-- also need to check is reqeust is satisfied (hide==true), in which case no offer option -->
-          <button v-else @click="goToOfferPage">Offer</button>
-          <button v-if="request.requester === currentUsername" @click="goToViewOffersPage">View Offers</button>
+          <div>
+            <button v-if="request.requester === currentUsername" @click="goToViewOffersPage">View Offers</button>
+            <button v-else @click="goToOfferPage">Offer</button>
+          </div>
         </div>
       </div>
     </div>
@@ -199,7 +209,7 @@ h1 {
 }
 
 button {
-  margin-right: 0.5em;
+  margin: 0.5em;
 }
 .image-column {
   width: 400px; /* Set the square width */

@@ -59,11 +59,11 @@ onBeforeMount(async () => {
               <RouterLink v-if="isLoggedIn && isModalOpen" :to="{ name: 'Create Request' }" class="modal-link" style="vertical-align: 4px;">Create Request</RouterLink>
             </li>
           </div>
-            <li class="link" v-if="isLoggedIn">
-              <a href="#" @click.prevent="toggleModal" class="nav-icon plus-button">
-                <i class="fa-solid fa-plus"></i>
-              </a>
-            </li>
+          <li class="link" v-if="isLoggedIn">
+            <a href="#" @click.prevent="toggleModal" class="nav-icon plus-button">
+              <i class="fa-solid fa-plus"></i>
+            </a>
+          </li>
         </div>
 
 

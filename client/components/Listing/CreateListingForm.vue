@@ -3,6 +3,7 @@ import TaggingComponent from "@/components/Tagging/TaggingComponent.vue";
 import { fetchy } from "@/utils/fetchy"; // Ensure this is set up to handle your API requests
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import noImage from "@/assets/images/no-image.jpg";
 
 // Form fields
 const name = ref("");
@@ -99,6 +100,10 @@ const createListing = async () => {
 
 <template>
   <div class="form-container">
+    <!-- Image Preview on the Right -->
+    <div class="image-container">
+      <img :src="imageUrl && isValidUrl(imageUrl) ? imageUrl : noImage" />
+    </div>
     <form @submit.prevent="createListing" class="pure-form pure-form-stacked create-listing-form">
       <label for="name">Item Name</label>
       <input id="name" type="text" v-model="name" placeholder="Name" required />
@@ -111,7 +116,7 @@ const createListing = async () => {
       <small v-if="imageError" style="color: #c72d12">{{ imageError }}</small>
 
       <label for="quantity">Quantity</label>
-      <input id="quantity" type="number" v-model.number="quantity" placeholder="Quantity" required min="1" max="100" />
+      <input id="quantity" type="number" v-model.number="quantity" placeholder="1" required min="1" max="100" />
       <small v-if="quantityError" style="color: #c72d12">{{ quantityError }}</small>
 
       <label for="expireDate">Expire Date</label>
@@ -133,11 +138,6 @@ const createListing = async () => {
 
       <button type="submit" class="pure-button pure-button-primary">Create Listing</button>
     </form>
-
-    <!-- Image Preview on the Right -->
-    <div class="image-container">
-      <img :src="imageUrl && isValidUrl(imageUrl) ? imageUrl : 'assets/images/no-image.png'" class="item-image" />
-    </div>
   </div>
 </template>
 
@@ -155,6 +155,11 @@ const createListing = async () => {
   display: flex;
   flex-direction: column;
   gap: 0.5em;
+}
+
+button {
+  background-color: #69825a;
+  border-radius: 10px;
 }
 
 .image-container {
