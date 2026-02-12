@@ -1,99 +1,105 @@
 <script setup lang="ts">
-import router from "@/router";
+import { fetchy } from "@/utils/fetchy";
 import { ref } from "vue";
-import { fetchy } from "../../utils/fetchy";
+import noImage from "@/assets/images/no-image.jpg";
+
+
+import { useRouter } from "vue-router";
+
 
 const props = defineProps(["requestId"]);
 
-const image = ref("");
-const location = ref("");
+const imageUrl = ref("");
+const meetupLocation = ref("");
 const message = ref("");
 
-const makeOffer = async (location: string, image?: string, message?: string) => {
+const imageError = ref("");
+
+const isValidUrl = (url: string) => {
   try {
-    const requestId = props.requestId;
-    if (image && message) {
-      await fetchy("/api/offers", "POST", {
-        body: { requestId, location, image, message },
-      });
-    } else if (image) {
-      await fetchy("/api/offers", "POST", {
-        body: { requestId, location, image },
-      });
-    } else if (message) {
-      await fetchy("/api/offers", "POST", {
-        body: { requestId, location, message },
-      });
-    } else {
-      await fetchy("/api/offers", "POST", {
-        body: { requestId, location },
-      });
-    }
-  } catch (_) {
+    const u = new URL(url);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
+const router = useRouter();
+
+const makeOffer = async () => {
+  imageError.value = "";
+  if (!meetupLocation.value) {
+    alert("Meetup location is required.");
     return;
   }
-  emptyForm();
-  void router.push(`/requests/${props.requestId}`);
+  if (imageUrl.value && !isValidUrl(imageUrl.value)) {
+    imageError.value = "Please enter a valid image URL.";
+    return;
+  }
+  try {
+    const requestId = props.requestId;
+    await fetchy("/api/offers", "POST", {
+      body: {
+        requestId,
+        location: meetupLocation.value,
+        image: imageUrl.value,
+        message: message.value,
+      },
+    });
+    // Reset form fields
+    meetupLocation.value = "";
+    imageUrl.value = "";
+    message.value = "";
+    await router.push(`/requests/${props.requestId}`);
+  } catch {
+    alert("There was an error making the offer.");
+  }
 };
 
 function goBack() {
   void router.push(`/requests/${props.requestId}`);
 }
-
-const emptyForm = () => {
-  location.value = "";
-  image.value = "";
-  message.value = "";
-};
 </script>
 
 <template>
-  <h1>Offer</h1>
-  <p>Once you make the offer and it is accepted by the requester, they will be able to contact you by your contact info.</p>
-  <form @submit.prevent="makeOffer(location, image, message)">
-    <label for="image"> Image URL </label>
-    <input id="image" type="text" v-model="image" />
-    <div v-if="image !== ''" class="image-container">
-      <img :src="image" class="item-image" />
-    </div>
+  <button type="button" @click="goBack" class="cancel-top">Cancel</button>
+  <div class="form-container">
+    <div class="image-container">
+        <img :src="imageUrl && isValidUrl(imageUrl) ? imageUrl : noImage" />
+      </div>
+    <form @submit.prevent="makeOffer" class="pure-form pure-form-stacked create-offer-form">
+      
+      <h1>Offer</h1>
+      <p>Once you make the offer and it is accepted by the requester, they will be able to contact you by your contact info.</p>
+      <label for="imageUrl">Image URL</label>
+      <input id="imageUrl" type="url" v-model="imageUrl" placeholder="https://example.com/image.jpg" />
+      <small v-if="imageError" style="color: #c72d12">{{ imageError }}</small>
 
-    <label for="location"> 📍 Meetup Location</label>
-    <input id="location" type="text" v-model="location" required />
+      <label for="meetupLocation"> <span style="font-size: 25px">&#128205;</span>Meet Up Location </label>
+      <input id="meetupLocation" type="text" v-model="meetupLocation" placeholder="Meetup Location" required />
 
-    <label for="message"> Message </label>
-    <input id="message" type="text" v-model="message" />
-
-    <button type="submit" class="pure-button-primary pure-button">Send</button>
-  </form>
-  <button @click="goBack">Cancel</button>
+      <label for="message">Message</label>
+      <input id="message" type="text" v-model="message" placeholder="Message (optional)" />
+      
+      <button type="submit" class="pure-button pure-button-primary">Send Offer</button>
+    </form>
+  </div>
 </template>
 
 <style scoped>
-form {
+.form-container {
   display: flex;
-  flex-direction: column;
-  gap: 1em;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2em;
   padding: 1em;
 }
 
-input {
-  padding: 0.5em 0.6em;
-  display: inline-block;
-  border: 1px solid #ccc;
-  box-shadow: inset 0 1px 3px #ddd;
-  border-radius: 4px;
-  vertical-align: middle;
-  box-sizing: border-box;
-}
-
-textarea {
-  padding: 0.5em 0.6em;
-  display: inline-block;
-  border: 1px solid #ccc;
-  box-shadow: inset 0 1px 3px #ddd;
-  border-radius: 4px;
-  vertical-align: middle;
-  box-sizing: border-box;
+.create-offer-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
 }
 
 button {
@@ -102,18 +108,34 @@ button {
 }
 
 .image-container {
-  width: 400px; /* Set the square width */
-  height: 400px; /* Set the square height */
-  overflow: hidden; /* Ensure excess image is hidden */
-  margin-bottom: 15px;
-  margin-right: 100px;
-  margin-left: 50px;
+  width: 400px;
+  height: 400px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #f3f3f3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .image-container img {
   width: 100%;
   height: 100%;
   border-radius: 10px;
-  object-fit: cover; /* Ensures the image fills the square without distortion */
+  object-fit: cover;
+  border: 1px solid #ccc;
+}
+/* Style for the cancel button at the top */
+.cancel-top {
+  align-self: flex-end;
+  margin-bottom: 1em;
+  background: #c72d12;
+  color: #fff;
+  border: none;
+  padding: 0.5em 1.2em;
+  font-size: 1em;
+  border-radius: 8px;
+  cursor: pointer;
 }
 </style>
