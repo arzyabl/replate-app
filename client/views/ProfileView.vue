@@ -4,7 +4,7 @@ import UserOfferListComponent from "@/components/Offer/UserOfferListComponent.vu
 import UserProfileComponent from "@/components/Profile/UserProfileComponent.vue";
 import RequestListComponent from "@/components/Request/RequestListComponent.vue";
 import { ref } from "vue";
-import UserClaimListComponent from "../components/Claiming/UserClaimListComponent.vue";
+import UserClaimsByUserComponent from "../components/Claiming/UserClaimsByUserComponent.vue";
 
 const activeSection = ref("listings"); // Default to "listings"
 </script>
@@ -37,8 +37,8 @@ const activeSection = ref("listings"); // Default to "listings"
       <UserOfferListComponent :username="Array.isArray($route.params.id) ? $route.params.id[0] : $route.params.id" />
     </section>
     <section v-else-if="activeSection === 'claims'">
-       <p>You're viewing claims you've made.</p>
-      <UserClaimListComponent :username="Array.isArray($route.params.id) ? $route.params.id[0] : $route.params.id" />
+      <p>You're viewing claims you've made.</p>
+      <UserClaimsByUserComponent :username="Array.isArray($route.params.id) ? $route.params.id[0] : $route.params.id" />
     </section>
   </main>
 </template>
