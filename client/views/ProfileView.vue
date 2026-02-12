@@ -37,7 +37,6 @@ const activeSection = ref("listings"); // Default to "listings"
       <UserOfferListComponent :username="Array.isArray($route.params.id) ? $route.params.id[0] : $route.params.id" />
     </section>
     <section v-else-if="activeSection === 'claims'">
-      <p>You're viewing claims you've made.</p>
       <UserClaimsByUserComponent :username="Array.isArray($route.params.id) ? $route.params.id[0] : $route.params.id" />
     </section>
   </main>
