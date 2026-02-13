@@ -3,41 +3,50 @@ import ListingListComponent from "@/components/Listing/ListingListComponent.vue"
 import UserOfferListComponent from "@/components/Offer/UserOfferListComponent.vue";
 import UserProfileComponent from "@/components/Profile/UserProfileComponent.vue";
 import RequestListComponent from "@/components/Request/RequestListComponent.vue";
-import { ref } from "vue";
+import { useUserStore } from "@/stores/user";
+import { storeToRefs } from "pinia";
+import { computed, ref } from "vue";
+import { useRoute } from "vue-router";
 import UserClaimsByUserComponent from "../components/Claiming/UserClaimsByUserComponent.vue";
 
 const activeSection = ref("listings"); // Default to "listings"
+const { currentUsername } = storeToRefs(useUserStore());
+const route = useRoute();
+const profileUsername = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id;
+const isOwnProfile = computed(() => currentUsername.value === profileUsername);
 </script>
 <template>
   <main>
-    <UserProfileComponent :userId="$route.params.id" />
+    <UserProfileComponent :userId="route.params.id" />
 
     <!-- Clickable Headers for Sections -->
     <div class="tabs">
       <h1 :class="{ active: activeSection === 'listings' }" @click="activeSection = 'listings'">Listings</h1>
       <h1 :class="{ active: activeSection === 'requests' }" @click="activeSection = 'requests'">Requests</h1>
-      <h1 :class="{ active: activeSection === 'offers' }" @click="activeSection = 'offers'">Offers</h1>
-      <h1 :class="{ active: activeSection === 'claims' }" @click="activeSection = 'claims'">Claims</h1>
+      <template v-if="isOwnProfile">
+        <h1 :class="{ active: activeSection === 'offers' }" @click="activeSection = 'offers'">Offers</h1>
+        <h1 :class="{ active: activeSection === 'claims' }" @click="activeSection = 'claims'">Claims</h1>
+      </template>
     </div>
 
     <!-- Conditional Rendering Based on Active Section -->
     <section v-if="activeSection === 'listings'">
       <p>Available listings</p>
-      <ListingListComponent :username="Array.isArray($route.params.id) ? $route.params.id[0] : $route.params.id" />
+      <ListingListComponent :username="profileUsername" />
       <p>Historic listings</p>
-      <ListingListComponent :username="Array.isArray($route.params.id) ? $route.params.id[0] : $route.params.id" :historic="true" />
+      <ListingListComponent :username="profileUsername" :historic="true" />
     </section>
     <section v-else-if="activeSection === 'requests'">
       <p>Ongoing requests</p>
-      <RequestListComponent :username="Array.isArray($route.params.id) ? $route.params.id[0] : $route.params.id" />
+      <RequestListComponent :username="profileUsername" />
       <p>Historic requests</p>
-      <RequestListComponent :username="Array.isArray($route.params.id) ? $route.params.id[0] : $route.params.id" :historic="true" />
+      <RequestListComponent :username="profileUsername" :historic="true" />
     </section>
-    <section v-else-if="activeSection === 'offers'">
-      <UserOfferListComponent :username="Array.isArray($route.params.id) ? $route.params.id[0] : $route.params.id" />
+    <section v-else-if="activeSection === 'offers' && isOwnProfile">
+      <UserOfferListComponent :username="profileUsername" />
     </section>
-    <section v-else-if="activeSection === 'claims'">
-      <UserClaimsByUserComponent :username="Array.isArray($route.params.id) ? $route.params.id[0] : $route.params.id" />
+    <section v-else-if="activeSection === 'claims' && isOwnProfile">
+      <UserClaimsByUserComponent :username="profileUsername" />
     </section>
   </main>
 </template>
