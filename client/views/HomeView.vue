@@ -7,19 +7,29 @@ import { ref } from "vue";
 
 const { currentUsername, isLoggedIn } = storeToRefs(useUserStore());
 const categories = ["Ingredient", "Non-Perishable", "Produce", "Gluten-Free", "Vegan", "No Nuts", "Vegetarian"];
-const selectedCategory = ref("");
+// Removed legacy single-tag logic
+const selectedTags = ref<string[]>([]);
 
 const searchTerm = ref("");
 
-const toggleTag = (tag: string) => {
-  if (selectedCategory.value === tag) {
-    selectedCategory.value = "";
-  } else if (selectedCategory.value === "") {
-    selectedCategory.value = tag;
+// const toggleTag = (tag: string) => {
+//   if (selectedCategory.value === tag) {
+//     selectedCategory.value = "";
+//   } else if (selectedCategory.value === "") {
+//     selectedCategory.value = tag;
+//   } else {
+//     return;
+//   }
+//   console.log(selectedCategory.value)
+// };
+
+const selectTag = (tag: string) => {
+  if (selectedTags.value.includes(tag)) {
+    selectedTags.value = selectedTags.value.filter((t) => t !== tag);
   } else {
-    return;
+    selectedTags.value = [...selectedTags.value, tag];
   }
-  console.log(selectedCategory.value)
+  console.log(selectedTags.value);
 };
 </script>
 
@@ -29,9 +39,9 @@ const toggleTag = (tag: string) => {
       <input type="text" v-model="searchTerm" placeholder="Search items" />
     </div>
     <div class="categories">
-      <p>Select a tag:</p>
+      <p>Filter:</p>
       <div class="category-options">
-        <span v-for="category in categories" :key="category" :class="['category-option', { selected: selectedCategory===category }]" @click="toggleTag(category)">
+        <span v-for="category in categories" :key="category" :class="['category-option', { selected: selectedTags.includes(category) }]" @click="selectTag(category)">
           {{ category }}
         </span>
       </div>
@@ -40,14 +50,13 @@ const toggleTag = (tag: string) => {
       <h1 v-if="!isLoggedIn">Please login!</h1>
     </section>
     <h2>Listings</h2>
-    <ListingListComponent :searchTerm="searchTerm" :tag="selectedCategory" />
+    <ListingListComponent :searchTerm="searchTerm" :tags="selectedTags" />
     <h2>Requests</h2>
-    <RequestListComponent :searchTerm="searchTerm" :tag="selectedCategory"/>
+    <RequestListComponent :searchTerm="searchTerm" />
   </main>
 </template>
 
 <style scoped>
-
 .thumb-container {
   display: grid;
   grid-auto-flow: column;
@@ -112,8 +121,6 @@ const toggleTag = (tag: string) => {
   max-width: 100px;
   margin-top: 10px;
 }
-
-
 
 .tagging-component {
   display: flex;

@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { useUserStore } from "@/stores/user";
 import { fetchy } from "@/utils/fetchy";
-import { ObjectId } from "mongodb";
 import { storeToRefs } from "pinia";
 import { computed, onBeforeMount, ref, watch } from "vue";
 import ListingThumbComponent from "./ListingThumbComponent.vue";
 
-const props = defineProps(["searchTerm", "username", "historic", "tag"]);
+const props = defineProps(["searchTerm", "username", "historic", "tags"]);
 
 const { isLoggedIn } = storeToRefs(useUserStore());
 const loaded = ref(false);
+const tagLoading = ref(false);
 let listings = ref<Array<Record<string, string>>>([]);
 const itemsWithTag = ref<Array<string>>();
 
@@ -28,37 +28,65 @@ async function getListings() {
 }
 
 async function getTagged() {
-  let results: ObjectId[];
-  console.log(props.tag)
+  tagLoading.value = true;
   try {
-    if (props.tag) {
-      console.log('in fetchy')
-      results = await fetchy(`/api/tagged/${props.tag}`, "GET");
-      itemsWithTag.value = results.map(t => t.toString());
-      console.log(itemsWithTag.value)
+    if (props.tags && props.tags.length > 0) {
+      const tagResults = await Promise.all(
+        props.tags.map((tag) => {
+          const result = fetchy(`/api/tagged/${tag}`, "GET");
+          result.then((res) =>
+            console.log(
+              `Fetched for tag '${tag}':`,
+              res.map((t: any) => t.toString()),
+            ),
+          );
+          return result;
+        }),
+      );
+      const sets = tagResults.map((arr, idx) => {
+        const set = new Set(arr.map((t: any) => t.toString()));
+        console.log(`Set for tag '${props.tags[idx]}':`, Array.from(set));
+        return set;
+      });
+      if (sets.length === 1) {
+        itemsWithTag.value = Array.from(sets[0]);
+        console.log("Single tag, items:", itemsWithTag.value);
+      } else if (sets.length > 1) {
+        let intersection = sets[0];
+        for (let i = 1; i < sets.length; i++) {
+          intersection = new Set(Array.from(intersection).filter((x) => sets[i].has(x)));
+        }
+        itemsWithTag.value = Array.from(intersection);
+        console.log("Intersection of tags, items:", itemsWithTag.value);
+      } else {
+        itemsWithTag.value = [];
+        console.log("No tags selected, items: []");
+      }
     } else {
-      console.log(props.tag)
+      itemsWithTag.value = undefined;
     }
-  } catch (_) {
-    console.log('did not fetchy')
-    return;
+  } catch {
+    itemsWithTag.value = [];
+  } finally {
+    tagLoading.value = false;
   }
 }
 
 watch(
-      () => props.tag,
-      async (newTag, oldTag) => {
-        await getTagged();
-      },
-      { immediate: true } // Fetch immediately when the component is mounted
-    );
+  // Watch for changes in the "tags" prop
+  () => props.tags,
+  async (newTags, oldTags) => {
+    await getTagged();
+  },
+  { immediate: true }, // Fetch immediately when the component is mounted
+);
 
 const filteredListings = computed(() => {
   const searchTerm = props.searchTerm?.toLowerCase() || "";
   if (props.historic) {
     return listings.value.filter((listing) => listing && listing.name.toLowerCase().includes(searchTerm) && listing.hidden);
   } else {
-    if (props.tag) {
+    if (props.tags && props.tags.length > 0) {
       return listings.value.filter((listing) => listing && listing.name.toLowerCase().includes(searchTerm) && !listing.hidden && itemsWithTag.value?.includes(listing._id.toString()));
     } else {
       return listings.value.filter((listing) => listing && listing.name.toLowerCase().includes(searchTerm) && !listing.hidden);
@@ -74,19 +102,16 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <section class="thumb-container" v-if="loaded && filteredListings.length !== 0">
+  <section class="thumb-container" v-if="loaded && !tagLoading && filteredListings.length !== 0">
     <article class="thumb" v-for="listing in filteredListings" :key="listing._id">
       <ListingThumbComponent :listingId="listing._id" />
     </article>
   </section>
-  <p class="none" v-else-if="loaded">No listings found</p>
+  <p v-else-if="loaded && !tagLoading">No listings found</p>
   <p v-else>Loading...</p>
 </template>
 
 <style scoped>
-.none {
-  font-size: small;
-}
 .thumb-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 280px));
